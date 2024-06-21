@@ -17,7 +17,7 @@ stages:
           Owner: PraveenKumar-Kasoju
           Repo: Lambda-ECR
           Branch: main
-          OAuthToken: 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
+          OAuthToken: 
   - name: Build
     actions:
       - name: Build
