@@ -14,10 +14,10 @@ stages:
         outputArtifacts:
           - name: SourceOutput
         configuration:
-          Owner: your-github-username
-          Repo: your-repo-name
+          Owner: PraveenKumar-Kasoju
+          Repo: Lambda-ECR
           Branch: main
-          OAuthToken: your-github-oauth-token
+          OAuthToken: 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
   - name: Build
     actions:
       - name: Build

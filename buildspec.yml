@@ -1,21 +1,26 @@
 version: 0.2
 
+env:
+  secrets-manager:
+    AWS_ACCESS_KEY_ID: "github/Lambda-ECR/AWS_ACCESS_KEY_ID"
+    AWS_SECRET_ACCESS_KEY: "github/Lambda-ECR/AWS_SECRET_ACCESS_KEY"
+    AWS_REGION: "github/Lambda-ECR/AWS_REGION"
+    ECR_REPOSITORY_URI: "github/Lambda-ECR/ECR_REPOSITORY_URI"
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com)
-      - REPOSITORY_URI=<account-id>.dkr.ecr.us-east-1.amazonaws.com/my-repository
+      - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI)
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
       - echo Build started on `date`
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker image...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - printf '[{"name":"container-name","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"container-name","imageUri":"%s"}]' $ECR_REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files: imagedefinitions.json
