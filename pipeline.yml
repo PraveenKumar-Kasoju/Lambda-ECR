@@ -17,6 +17,7 @@ stages:
           Owner: PraveenKumar-Kasoju
           Repo: Lambda-ECR
           Branch: main
+          OAuthToken: #{GITHUB_OAUTH_TOKEN}  # Use a placeholder for the secret
   - name: Build
     actions:
       - name: Build
