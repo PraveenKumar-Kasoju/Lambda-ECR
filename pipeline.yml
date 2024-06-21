@@ -1,0 +1,47 @@
+version: 1.0
+resources:
+  - repository: my-github-repo
+    type: github
+stages:
+  - name: Source
+    actions:
+      - name: Source
+        actionTypeId:
+          category: Source
+          owner: ThirdParty
+          provider: GitHub
+          version: 1
+        outputArtifacts:
+          - name: SourceOutput
+        configuration:
+          Owner: your-github-username
+          Repo: your-repo-name
+          Branch: main
+          OAuthToken: your-github-oauth-token
+  - name: Build
+    actions:
+      - name: Build
+        actionTypeId:
+          category: Build
+          owner: AWS
+          provider: CodeBuild
+          version: 1
+        inputArtifacts:
+          - name: SourceOutput
+        outputArtifacts:
+          - name: BuildOutput
+        configuration:
+          ProjectName: github-lambda-lyr
+  - name: Deploy
+    actions:
+      - name: Deploy
+        actionTypeId:
+          category: Deploy
+          owner: AWS
+          provider: Lambda
+          version: 1
+        inputArtifacts:
+          - name: BuildOutput
+        configuration:
+          FunctionName: github-to-lambda-demo
+          UserParameters: imagedefinitions.json

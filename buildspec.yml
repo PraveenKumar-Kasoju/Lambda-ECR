@@ -4,17 +4,18 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 506236563550.dkr.ecr.us-east-1.amazonaws.com
+      - $(aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com)
+      - REPOSITORY_URI=<account-id>.dkr.ecr.us-east-1.amazonaws.com/my-repository
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
       - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t github-to-lambda .
-      - docker tag github-to-lambda:latest 506236563550.dkr.ecr.us-east-1.amazonaws.com/github-to-lambda:latest
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
-      - echo Pushing the Docker image...
-      - docker push 506236563550.dkr.ecr.us-east-1.amazonaws.com/github-to-lambda:latest
       - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"container-name","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
-  files: '**/*'
+  files: imagedefinitions.json

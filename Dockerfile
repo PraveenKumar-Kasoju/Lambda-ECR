@@ -1,12 +1,18 @@
-# Use the official AWS Lambda Python 3.8 base image
-FROM public.ecr.aws/lambda/python:3.8
+# Use an official Node.js runtime as a parent image
+FROM node:14
 
-# Copy the function code into the container at /var/task
-COPY app.py ${LAMBDA_TASK_ROOT}
+# Set the working directory
+WORKDIR /app
 
-# Optionally, install additional Python dependencies
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
+# Copy package.json and install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Set the command to your handler function
-CMD ["app.lambda_handler"]
+# Copy the rest of the application
+COPY . .
+
+# Expose port (if necessary)
+EXPOSE 8080
+
+# Define the command to run the application
+CMD ["node", "index.js"]
