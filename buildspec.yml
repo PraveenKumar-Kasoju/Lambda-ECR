@@ -1,26 +1,37 @@
 version: 0.2
 
 env:
-  secrets-manager:
-    AWS_ACCESS_KEY_ID: "github/Lambda-ECR/AWS_ACCESS_KEY_ID"
-    AWS_SECRET_ACCESS_KEY: "github/Lambda-ECR/AWS_SECRET_ACCESS_KEY"
-    AWS_REGION: "github/Lambda-ECR/AWS_REGION"
-    ECR_REPOSITORY_URI: "github/Lambda-ECR/ECR_REPOSITORY_URI"
+  variables:
+    AWS_DEFAULT_REGION: "us-east-1"  # Explicitly set here
+  parameter-store:
+    AWS_ACCESS_KEY_ID: "AccessKeyID"
+    AWS_SECRET_ACCESS_KEY: "SecretAccessKey"
+    AWS_ACCOUNT_ID: "AccountID"
+    ECR_REPOSITORY_NAME: "ECRRepositoryName"
 
 phases:
+  install:
+    runtime-versions:
+      python: 3.8
+    commands:
+      - echo Install AWS CLI
+      - pip install awscli
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI)
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
   build:
     commands:
       - echo Build started on `date`
-      - docker build -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
+      - echo Building the Docker image...
+      - docker build -t $ECR_REPOSITORY_NAME .
+      - docker tag $ECR_REPOSITORY_NAME:latest $REPOSITORY_URI:latest
   post_build:
     commands:
       - echo Build completed on `date`
-      - docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
-      - printf '[{"name":"container-name","imageUri":"%s"}]' $ECR_REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:latest
 artifacts:
-  files: imagedefinitions.json
+  files: '**/*'
+  discard-paths: yes
