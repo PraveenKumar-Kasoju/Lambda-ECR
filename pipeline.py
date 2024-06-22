@@ -4,13 +4,13 @@ import boto3
 pipeline_name = 'github-lambda-ecr'
 region = 'us-east-1'
 lambda_function_name = 'github-to-lambda-demo'
-github_owner = '<PraveenKumar-Kasoju>'
-github_repo = '<Lambda-Ecr>'
+github_owner = 'PraveenKumar-Kasoju'
+github_repo = 'Lambda-Ecr'
 github_branch = 'main'
-github_token = '<github-token>'
-codebuild_project_name = '<github-lambda-ecr>'
-artifact_store_s3_bucket = '<lambda-deploy-bucket>'
-codepipeline_role_arn = 'arn:aws:iam::<506236563550:role/<github-lambda-ecr-role>'
+github_token = 'github-token'
+codebuild_project_name = 'github-lambda-ecr'
+artifact_store_s3_bucket = 'lambda-deploy-bucket'
+codepipeline_role_arn = 'arn:aws:iam::506236563550:role/github-lambda-ecr-role'
 
 codepipeline_client = boto3.client('codepipeline', region_name=us-east-1)
 
