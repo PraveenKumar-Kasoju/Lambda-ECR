@@ -1,26 +1,18 @@
-# Use an official Python runtime as a parent image (3.8 recommended for compatibility)
-FROM python:3.8-slim
+# Use a Python base image with slim version
+FROM python:3.9-slim
 
-# Set working directory in the container (optional, depends on your project structure)
-# This line can be removed if your application code is already at the root of the context
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents (excluding unnecessary files) into the container at /app
-COPY . . --from=source
-
-# Define a multi-stage build for a smaller final image
-# Stage 1: Install dependencies
-STAGE build
+# Copy requirements file first and install dependencies
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Stage 2: Copy application code and set entrypoint
-FROM python:3.8-slim AS final
-COPY --from=source . .
-WORKDIR /app  # Optional, if not set earlier
+# Copy the rest of the application files
+COPY . .
 
-# Expose port if your application needs it (replace 8000 with your port)
-EXPOSE 8000
+# Explicitly create /app directory if it doesn't exist (optional, for safety)
+RUN mkdir -p /app
 
-# Run app.py when the container launches
+# Set the default command to run your application
 CMD ["python", "app.py"]
