@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /app.py
 
 # Copy requirements file first and install dependencies
 COPY requirements.txt .
@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create /app directory if it doesn't exist (though typically unnecessary if using COPY . .)
-RUN mkdir -p /app
+RUN mkdir -p /app.py
 
 # Expose the port Flask runs on
 EXPOSE 5000
