@@ -16,6 +16,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Showing current directory contents...
+      - ls -al
       - echo Building the Docker image...
       - docker build -t $ECR_REPO_URI:latest .
       - docker images
@@ -23,13 +24,12 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $ECR_REPO_URI:latest
-      - docker push $ECR_REPO_URI:$IMAGE_TAG
+      - docker push $ECR_REPO_URI:latest || { echo 'Docker push latest failed'; exit 1; }
+      - docker push $ECR_REPO_URI:$IMAGE_TAG || { echo "Docker push $IMAGE_TAG failed"; exit 1; }
 artifacts:
   files:
     - '**/*'
 
-# Add the image configuration here
 image:
-  name: 033914078355.dkr.ecr.us-east-1.amazonaws.com/your-custom-image:latest
+  name: aws/codebuild/standard:5.0
   computeType: BUILD_GENERAL1_SMALL
