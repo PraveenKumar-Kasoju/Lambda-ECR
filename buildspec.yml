@@ -4,6 +4,7 @@ env:
   variables:
     ECR_REPO_URI: "033914078355.dkr.ecr.us-east-1.amazonaws.com/example-repo"
     AWS_DEFAULT_REGION: "us-east-1"
+    LAMBDA_FUNCTION_NAME: "github-to-lambda-demo"
 
 phases:
   pre_build:
@@ -16,17 +17,21 @@ phases:
   build:
     commands:
       - echo Build started on `date`
+      - echo Showing current directory contents...
+      - ls -al
       - echo Building the Docker image...
-      - docker build -t $ECR_REPO_URI:$IMAGE_TAG .
-      - docker tag $ECR_REPO_URI:$IMAGE_TAG $ECR_REPO_URI:latest
+      - docker build -t $ECR_REPO_URI:latest .
+      - docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
       - docker images
 
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $ECR_REPO_URI:$IMAGE_TAG || { echo "Docker push $IMAGE_TAG failed"; exit 1; }
       - docker push $ECR_REPO_URI:latest || { echo 'Docker push latest failed'; exit 1; }
+      - docker push $ECR_REPO_URI:$IMAGE_TAG || { echo "Docker push $IMAGE_TAG failed"; exit 1; }
+      - echo Updating Lambda function $LAMBDA_FUNCTION_NAME with new image...
+      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $ECR_REPO_URI:$IMAGE_TAG
 
 artifacts:
   files:
