@@ -16,7 +16,7 @@ phases:
 
   build:
     commands:
-      - echo Build started on `date`
+      - echo Build started on $(date)
       - echo Showing current directory contents...
       - ls -al
       - echo Building the Docker image...
@@ -25,15 +25,13 @@ phases:
       - docker images
 
   post_build:
-  commands:
-    - echo "Build completed successfully"  # Example command
-    - echo Build completed on `date`
-    - echo Pushing the Docker images...
-    - docker push $ECR_REPO_URI:latest || { echo 'Docker push latest failed'; exit 1; }
-    - docker push $ECR_REPO_URI:$IMAGE_TAG || { echo "Docker push $IMAGE_TAG failed"; exit 1; }
-    - echo Updating Lambda function $LAMBDA_FUNCTION_NAME with new image...
-    # Code needs to specify the image URI, not the ECR repository URI
-    - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --ImageUri $ECR_REPO_URI:$IMAGE_TAG
+    commands:
+      - echo Build completed on $(date)
+      - echo Pushing the Docker images...
+      - docker push $ECR_REPO_URI:latest || { echo 'Docker push latest failed'; exit 1; }
+      - docker push $ECR_REPO_URI:$IMAGE_TAG || { echo "Docker push $IMAGE_TAG failed"; exit 1; }
+      - echo Updating Lambda function $LAMBDA_FUNCTION_NAME with new image...
+      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $ECR_REPO_URI:$IMAGE_TAG
 
 artifacts:
   files:
