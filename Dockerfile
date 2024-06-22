@@ -1,23 +1,9 @@
-# Use an official Python runtime as a parent image
-FROM python:3.8
+FROM ubuntu:20.04
 
-# Set the working directory in the container
-WORKDIR /app.py
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.8 python3.8-venv python3.8-dev python3-pip
 
-# Copy requirements file first and install dependencies
-COPY requirements.txt .
-
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the entire application to the container's working directory
-COPY . .
-
-# Create /app directory if it doesn't exist (though typically unnecessary if using COPY . .)
-RUN mkdir -p /app.py
-
-# Expose the port Flask runs on
-EXPOSE 5000
-
-# Set the default command to run when a container starts
-CMD ["python", "app.py"]
+CMD ["/bin/bash"]
