@@ -1,107 +1,104 @@
 import boto3
 
-pipeline_name = 'my-pipeline'
-ecr_repo_name = 'my-ecr-repo'
-lambda_function_name = 'my-lambda-function'
-s3_bucket = 'my-codepipeline-bucket'
-source_artifact_name = 'source_output'
-build_artifact_name = 'build_output'
+# Define your AWS resources and configuration
+pipeline_name = 'github-lambda-ecr'
+region = 'us-east-1'
+lambda_function_name = 'github-to-lambda-demo'
+github_owner = '<PraveenKumar-Kasoju>'
+github_repo = '<Lambda-Ecr>'
+github_branch = 'main'
+github_token = '<github-token>'
+codebuild_project_name = '<github-lambda-ecr>'
+artifact_store_s3_bucket = '<lambda-deploy-bucket>'
+codepipeline_role_arn = 'arn:aws:iam::<506236563550:role/<github-lambda-ecr-role>'
 
-codepipeline = boto3.client('codepipeline')
-s3 = boto3.client('s3')
+codepipeline_client = boto3.client('codepipeline', region_name=us-east-1)
 
-def create_pipeline():
-    response = codepipeline.create_pipeline(
-        pipeline={
-            'name': pipeline_name,
-            'roleArn': 'arn:aws:iam::YOUR_ACCOUNT_ID:role/AWS-CodePipeline-Service',
-            'artifactStore': {
-                'type': 'S3',
-                'location': s3_bucket,
+response = codepipeline_client.create_pipeline(
+    pipeline={
+        'name': pipeline_name,
+        'roleArn': codepipeline_role_arn,
+        'artifactStore': {
+            'type': 'S3',
+            'location': artifact_store_s3_bucket
+        },
+        'stages': [
+            {
+                'name': 'Source',
+                'actions': [
+                    {
+                        'name': 'SourceAction',
+                        'actionTypeId': {
+                            'category': 'Source',
+                            'owner': 'ThirdParty',
+                            'provider': 'GitHub',
+                            'version': '1'
+                        },
+                        'outputArtifacts': [
+                            {
+                                'name': 'SourceOutput'
+                            }
+                        ],
+                        'configuration': {
+                            'Owner': github_owner,
+                            'Repo': github_repo,
+                            'Branch': github_branch,
+                            'OAuthToken': github_token
+                        }
+                    }
+                ]
             },
-            'stages': [
-                {
-                    'name': 'Source',
-                    'actions': [
-                        {
-                            'name': 'SourceAction',
-                            'actionTypeId': {
-                                'category': 'Source',
-                                'owner': 'AWS',
-                                'provider': 'S3',
-                                'version': '1'
-                            },
-                            'outputArtifacts': [
-                                {
-                                    'name': source_artifact_name
-                                }
-                            ],
-                            'configuration': {
-                                'S3Bucket': s3_bucket,
-                                'S3ObjectKey': 'source.zip',
-                            },
-                            'runOrder': 1
+            {
+                'name': 'Build',
+                'actions': [
+                    {
+                        'name': 'BuildAction',
+                        'actionTypeId': {
+                            'category': 'Build',
+                            'owner': 'AWS',
+                            'provider': 'CodeBuild',
+                            'version': '1'
+                        },
+                        'inputArtifacts': [
+                            {
+                                'name': 'SourceOutput'
+                            }
+                        ],
+                        'outputArtifacts': [
+                            {
+                                'name': 'BuildOutput'
+                            }
+                        ],
+                        'configuration': {
+                            'ProjectName': github-lambda-ecr
                         }
-                    ]
-                },
-                {
-                    'name': 'Build',
-                    'actions': [
-                        {
-                            'name': 'BuildAction',
-                            'actionTypeId': {
-                                'category': 'Build',
-                                'owner': 'AWS',
-                                'provider': 'CodeBuild',
-                                'version': '1'
-                            },
-                            'inputArtifacts': [
-                                {
-                                    'name': source_artifact_name
-                                }
-                            ],
-                            'outputArtifacts': [
-                                {
-                                    'name': build_artifact_name
-                                }
-                            ],
-                            'configuration': {
-                                'ProjectName': 'my-codebuild-project',
-                            },
-                            'runOrder': 1
+                    }
+                ]
+            },
+            {
+                'name': 'Deploy',
+                'actions': [
+                    {
+                        'name': 'DeployAction',
+                        'actionTypeId': {
+                            'category': 'Deploy',
+                            'owner': 'AWS',
+                            'provider': 'Lambda',
+                            'version': '1'
+                        },
+                        'inputArtifacts': [
+                            {
+                                'name': 'BuildOutput'
+                            }
+                        ],
+                        'configuration': {
+                            'FunctionName': github-to-lambda-demo
                         }
-                    ]
-                },
-                {
-                    'name': 'Deploy',
-                    'actions': [
-                        {
-                            'name': 'DeployAction',
-                            'actionTypeId': {
-                                'category': 'Deploy',
-                                'owner': 'AWS',
-                                'provider': 'Lambda',
-                                'version': '1'
-                            },
-                            'inputArtifacts': [
-                                {
-                                    'name': build_artifact_name
-                                }
-                            ],
-                            'configuration': {
-                                'FunctionName': lambda_function_name,
-                                'UserParameters': '{"ImageUri": "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:latest"}',
-                            },
-                            'runOrder': 1
-                        }
-                    ]
-                }
-            ],
-            'version': 1
-        }
-    )
+                    }
+                ]
+            }
+        ]
+    }
+)
 
-    return response
-
-if __name__ == "__main__":
-    create_pipeline()
+print(response)
