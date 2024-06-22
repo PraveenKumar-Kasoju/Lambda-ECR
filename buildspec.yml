@@ -16,9 +16,6 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Showing current directory contents...
-      - ls -al
-      - echo Showing /app directory contents...
-      - ls -al /app
       - echo Building the Docker image...
       - docker build -t $ECR_REPO_URI:latest .
       - docker images
