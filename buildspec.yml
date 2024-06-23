@@ -1,11 +1,4 @@
 version: 0.2
-
-env:
-  variables:
-    ECR_REPO_URI: "033914078355.dkr.ecr.us-east-1.amazonaws.com/example-repo"
-    AWS_DEFAULT_REGION: "us-east-1"
-    LAMBDA_FUNCTION_NAME: "github-to-lambda-demo"
-
 phases:
   pre_build:
     commands:
