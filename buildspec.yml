@@ -1,9 +1,7 @@
 version: 0.2
 
 env:
-  parameter-store:
-    DOCKER_HUB_USERNAME: /dockerhub/username
-    DOCKER_HUB_PASSWORD: /dockerhub/DOCKER_HUB_PASSWORD
+  variables:
     ECR_REPO_URI: "033914078355.dkr.ecr.us-east-1.amazonaws.com/example-repo"
     AWS_DEFAULT_REGION: "us-east-1"
     LAMBDA_FUNCTION_NAME: "github-to-lambda-demo"
@@ -11,8 +9,6 @@ env:
 phases:
   pre_build:
     commands:
-      - echo Logging in to Docker Hub...
-      - echo $DOCKER_HUB_PASSWORD | docker login --username $DOCKER_HUB_USERNAME --password-stdin
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
@@ -40,7 +36,3 @@ phases:
 artifacts:
   files:
     - '**/*'
-
-image:
-  name: aws/codebuild/standard:5.0
-  computeType: BUILD_GENERAL1_SMALL
