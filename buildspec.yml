@@ -1,13 +1,16 @@
 version: 0.2
-phases:
-  install:
-    runtime-versions:
-      python: 3.8
 
+env:
+  variables:
+    ECR_REPO_URI: "033914078355.dkr.ecr.us-east-1.amazonaws.com/example-repo"
+    AWS_DEFAULT_REGION: "us-east-1"
+    LAMBDA_FUNCTION_NAME: "github-to-lambda-demo"
+
+phases:
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI || exit 1
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
 
